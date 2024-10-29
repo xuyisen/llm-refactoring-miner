@@ -1,3 +1,10 @@
+For RefactoringMiner, I implemented the following changes to extract relevant refactoring information:
+
+1. `gui.RunWithLocallyClonedRepository` receives a json file, which is the specific information of refactoring obtained after executing the refactoringMiner.jar file, and outputs a json file with additional properties, which can be analyzed for any project.
+2. `org.refactoringminer.test.TestAllRefactorings` receives Oracle refactoring data and outputs oracle refactoring data with additional information. This method is only for Oracle refactoring data.
+
+
+
 ![Alt](https://repobeats.axiom.co/api/embed/aaedbff1e1adfcefc54fff9dbdac2f5384cbcf87.svg "Repobeats analytics image")
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.tsantalis/refactoring-miner/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.tsantalis/refactoring-miner)
