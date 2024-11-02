@@ -52,6 +52,8 @@ public abstract class RefactoringHandler {
 	 */
 	public void onFinish(int refactoringsCount, int commitsCount, int errorCommitsCount) {}
 
+	public void processModelDiff(String commitId, UMLModelDiff umlModelDiff) throws RefactoringMinerTimedOutException {}
+
 	public void handleModelDiff(String commitId, List<Refactoring> refactoringsAtRevision, UMLModelDiff modelDiff) {}
 
 	public void handleModelDiffWithContent(String commitId, List<Refactoring> refactoringsAtRevision, UMLModelDiff modelDiff, Map<String, String> fileContentsBefore, Map<String, String> fileContentsCurrent) {}

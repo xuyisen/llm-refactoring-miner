@@ -944,6 +944,40 @@ public class GitHistoryRefactoringMinerImpl implements GitHistoryRefactoringMine
 		}
 	}
 
+	@Override
+	public void detectModelDiff(String commitId, Repository repository, RefactoringHandler handler, int timeout) {
+		ExecutorService service = Executors.newSingleThreadExecutor();
+		Future<?> f = null;
+		try {
+			Runnable r = () -> {
+				try {
+					handlePurity(handler, repository, commitId);
+				} catch (RefactoringMinerTimedOutException e) {
+					throw new RuntimeException(e);
+				}
+			};
+			f = service.submit(r);
+			f.get(timeout, TimeUnit.SECONDS);
+		} catch (TimeoutException e) {
+			f.cancel(true);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			service.shutdown();
+		}
+	}
+
+	protected void handlePurity(final RefactoringHandler handler, Repository repository, String currentCommitId) throws RefactoringMinerTimedOutException {
+		UMLModelDiff modelDiff = null;
+		ProjectASTDiff projectASTDiff = diffAtCommit(repository, currentCommitId);
+		if(projectASTDiff != null) {
+			modelDiff = projectASTDiff.getModelDiff();
+		}
+		handler.processModelDiff(currentCommitId, modelDiff);
+	}
+
 	protected List<Refactoring> detectRefactorings(final RefactoringHandler handler, String gitURL, String currentCommitId) {
 		List<Refactoring> refactoringsAtRevision = Collections.emptyList();
 		try {

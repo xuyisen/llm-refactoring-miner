@@ -2779,6 +2779,68 @@ public class UMLOperationBodyMapper implements Comparable<UMLOperationBodyMapper
 			}
 		}
 	}
+	public boolean allMappingsArePurelyMatched(Map<String, String> parameterToArgumentMap) {
+
+		Set<AbstractCodeMapping> mappings = getMappings();
+
+		for (AbstractCodeMapping mapping: mappings) {
+			if (!mapping.isPurelyExact(parameterToArgumentMap)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public HashSet<Replacement> omitReplacementsRegardingExactMappings(Map<String, String> parameterToArgumentMap, HashSet<Replacement> replacementsToCheck) {
+
+		Set<AbstractCodeMapping> mappings = getMappings();
+
+		for (AbstractCodeMapping mapping: mappings) {
+			if (mapping.isPurelyExact(parameterToArgumentMap)) {
+				replacementsToCheck.removeAll(mapping.getReplacements());
+			}
+		}
+		return replacementsToCheck;
+	}
+
+	public HashSet<Replacement> omitReplacementsAccordingToArgumentization(Map<String, String> parameterToArgumentMap, HashSet<Replacement> replacementsToCheck) {
+
+		Set<Replacement> replacementsToRemove = new HashSet<>();
+
+		for (Replacement replacement: replacementsToCheck) {
+			for (Map.Entry<String, String> parameterToArgument: parameterToArgumentMap.entrySet()) {
+				if (replacement.getBefore().equals(parameterToArgument.getValue()) &&
+						replacement.getAfter().equals(parameterToArgument.getKey())) {
+					replacementsToRemove.add(replacement);
+				}
+			}
+		}
+
+		replacementsToCheck.removeAll(replacementsToRemove);
+
+		return replacementsToCheck;
+	}
+
+	public void omitReplacementsAccordingSupplierGetPattern(Map<String, String> parameterToArgumentMap, HashSet<Replacement> replacementsToCheck) {
+
+		Set<Replacement> replacementsToRemove = new HashSet<>();
+
+		Set<AbstractCodeMapping> mappings = getMappings();
+		for (AbstractCodeMapping mapping : mappings) {
+			for (Replacement replacement : mapping.getReplacements()) {
+				for (Replacement replacement1 : replacementsToCheck) {
+					if (replacement.equals(replacement1)) {
+						if (mapping.checkForSupplierPattern(replacement, parameterToArgumentMap)) {
+							replacementsToRemove.add(replacement);
+						}
+					}
+				}
+			}
+		}
+
+		replacementsToCheck.removeAll(replacementsToRemove);
+	}
 
 	public UMLOperationBodyMapper(UMLOperation removedOperation, UMLOperationBodyMapper operationBodyMapper,
 			Map<String, String> parameterToArgumentMap1, Map<String, String> parameterToArgumentMap2, UMLAbstractClassDiff classDiff, AbstractCall operationInvocation, boolean nested) throws RefactoringMinerTimedOutException {

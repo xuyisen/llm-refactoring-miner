@@ -2,11 +2,7 @@ package gr.uom.java.xmi.decomposition;
 
 import static gr.uom.java.xmi.Constants.JAVA;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.refactoringminer.api.Refactoring;
@@ -125,6 +121,58 @@ public abstract class AbstractCodeMapping implements LeafMappingProvider {
 	public boolean isExact() {
 		return (fragment1.getArgumentizedString().equals(fragment2.getArgumentizedString()) || argumentizedStringExactAfterTypeReplacement() ||
 				fragment1.getString().equals(fragment2.getString()) || isExactAfterAbstraction() || containsIdenticalOrCompositeReplacement()) && !fragment1.isKeyword();
+	}
+
+	public boolean isPurelyExact(Map<String, String> parameterToArgumentMap) {
+		fragment2.argumentizationAfterRefactorings(parameterToArgumentMap);
+		fragment1.argumentizationAfterRefactorings(parameterToArgumentMap);
+//		fragment1.replaceParametersWithArguments(parameterToArgumentMap);
+		return (fragment1.getArgumentizedString().equals(fragment2.getArgumentizedString()) || argumentizedStringExactAfterTypeReplacement() ||
+				fragment1.getString().equals(fragment2.getString()) || isExactAfterAbstraction() || fragment1.getString().equals(fragment2.getArgumentizedAfterRefactorings()) ||
+				fragment1.getArgumentizedAfterRefactorings().equals(fragment2.getArgumentizedAfterRefactorings()));
+	}
+
+	public boolean checkForSupplierPattern(Replacement replacement, Map<String, String> parameterToArgumentMap) {
+		fragment2.argumentizationAfterRefactorings(parameterToArgumentMap);
+
+		String s1 = fragment1.getString();
+		String s2 = fragment2.getArgumentizedAfterRefactorings();
+
+		s1 = s1.replaceAll(";", "");
+		s2 = s2.replaceAll(";", "");
+
+		s1 = s1.replaceAll("\n", "");
+		s2 = s2.replaceAll("\n", "");
+
+		int equalSign1 = s1.indexOf("=");
+		int equalSign2 = s2.indexOf("=");
+
+		if (equalSign1 != -1 && equalSign2 != -1) {
+
+			String s1WithoutDeclaration = s1.substring(equalSign1 + 1);
+			String s2WithoutDeclaration = s2.substring(equalSign2 + 1);
+
+			int find = s2WithoutDeclaration.indexOf(s1WithoutDeclaration);
+
+			if (find != -1) {
+				s1WithoutDeclaration = s1WithoutDeclaration.replaceAll("\\)", "\\\\)");
+				s1WithoutDeclaration = s1WithoutDeclaration.replaceAll("\\(", "\\\\(");
+
+				List<String> finded = List.of(s2WithoutDeclaration.split(s1WithoutDeclaration));
+
+				for (String s3 : finded) {
+					if (s3.contains("->")) {
+						for (String s4 : finded) {
+							if (s4.contains(".get")){
+								return true;
+							}
+						}
+					}
+				}
+			}
+
+		}
+		return false;
 	}
 
 	private boolean argumentizedStringExactAfterTypeReplacement() {

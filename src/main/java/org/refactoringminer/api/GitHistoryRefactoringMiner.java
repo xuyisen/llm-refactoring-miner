@@ -93,6 +93,13 @@ public interface GitHistoryRefactoringMiner {
 	void detectAtCommit(String gitURL, String commitId, RefactoringHandler handler, int timeout);
 
 	/**
+	 * Detect refactorings performed in the specified commit.
+	 * @param repository A git repository (from JGit library).
+	 * @param handler A handler object that is responsible to process the detected refactorings.
+	 */
+	void detectModelDiff(String commitId, Repository repository, RefactoringHandler handler, int timeout);
+
+	/**
 	 * Detect refactorings performed in the specified pull request. All required information is extracted using the GitHub API.
 	 *
 	 * @param gitURL The git URL of the repository.
